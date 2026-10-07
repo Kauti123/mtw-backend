@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "notification-service",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/notification-service/src",

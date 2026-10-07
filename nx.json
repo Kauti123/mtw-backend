@@ -42,5 +42,6 @@
         "targetName": "test"
       }
     }
-  ]
+  ],
+  "analytics": false
 }
