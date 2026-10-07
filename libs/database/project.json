@@ -1,0 +1,14 @@
+﻿{
+  "name": "database",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/database/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:lib"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/database"],
+      "options": { "jestConfig": "libs/database/jest.config.ts" }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+﻿{
+  "name": "reporting-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/reporting-service/src",
+  "projectType": "application",
+  "tags": ["type:app"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": { "jestConfig": "apps/reporting-service/jest.config.ts", "passWithNoTests": true }
+    }
+  }
+}

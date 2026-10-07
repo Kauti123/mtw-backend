@@ -1,0 +1,13 @@
+﻿{
+  "name": "supplier-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/supplier-service/src",
+  "projectType": "application",
+  "tags": ["type:app"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": { "jestConfig": "apps/supplier-service/jest.config.ts", "passWithNoTests": true }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+﻿{
+  "name": "distribution-hub",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/distribution-hub/src",
+  "projectType": "application",
+  "tags": ["type:app"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": { "jestConfig": "apps/distribution-hub/jest.config.ts", "passWithNoTests": true }
+    }
+  }
+}

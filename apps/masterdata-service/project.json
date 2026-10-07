@@ -1,0 +1,13 @@
+﻿{
+  "name": "masterdata-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/masterdata-service/src",
+  "projectType": "application",
+  "tags": ["type:app"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": { "jestConfig": "apps/masterdata-service/jest.config.ts", "passWithNoTests": true }
+    }
+  }
+}

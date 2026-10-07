@@ -1,0 +1,13 @@
+﻿{
+  "name": "cost-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/cost-service/src",
+  "projectType": "application",
+  "tags": ["type:app"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": { "jestConfig": "apps/cost-service/jest.config.ts", "passWithNoTests": true }
+    }
+  }
+}

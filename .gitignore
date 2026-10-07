@@ -1,0 +1,16 @@
+node_modules
+dist
+tmp
+.nx/cache
+.nx/workspace-data
+coverage
+.env
+.env.local
+*.log
+.DS_Store
+prisma/*.db
+prisma/migrations/**/migration_lock.toml.bak
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.tsbuildinfo

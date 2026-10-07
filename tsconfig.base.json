@@ -1,0 +1,41 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mtw/common": ["libs/common/src/index.ts"],
+      "@mtw/config": ["libs/config/src/index.ts"],
+      "@mtw/contracts": ["libs/contracts/src/index.ts"],
+      "@mtw/database": ["libs/database/src/index.ts"],
+      "@mtw/messaging": ["libs/messaging/src/index.ts"],
+      "@mtw/cache": ["libs/cache/src/index.ts"],
+      "@mtw/queue": ["libs/queue/src/index.ts"],
+      "@mtw/http-client": ["libs/http-client/src/index.ts"],
+      "@mtw/security": ["libs/security/src/index.ts"],
+      "@mtw/storage": ["libs/storage/src/index.ts"],
+      "@mtw/observability": ["libs/observability/src/index.ts"],
+      "@mtw/testing": ["libs/testing/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp", "dist"]
+}
