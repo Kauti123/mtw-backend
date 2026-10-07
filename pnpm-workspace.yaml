@@ -2,3 +2,18 @@ packages:
   - 'apps/*'
   - 'libs/*'
   - 'tools/*'
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/engines': true
+  '@scarf/scarf': true
+  '@swc/core': true
+  argon2: true
+  cpu-features: true
+  esbuild: true
+  msgpackr-extract: true
+  nestjs-pino: true
+  nx: true
+  prisma: true
+  protobufjs: true
+  ssh2: true
+  unrs-resolver: true
