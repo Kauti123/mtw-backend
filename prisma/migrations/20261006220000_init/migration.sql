@@ -1,0 +1,4 @@
+-- MTW initial schema placeholder.
+-- Run: pnpm prisma:migrate
+-- This file is a structural marker; prefer `prisma migrate dev` to generate
+-- the authoritative SQL from prisma/schema.prisma against a live MySQL.

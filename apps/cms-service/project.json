@@ -1,0 +1,13 @@
+{
+  "name": "cms-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/cms-service/src",
+  "projectType": "application",
+  "tags": ["type:app"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": { "jestConfig": "apps/cms-service/jest.config.ts", "passWithNoTests": true }
+    }
+  }
+}

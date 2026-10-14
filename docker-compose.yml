@@ -1,0 +1,128 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: mtw-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret
+      MYSQL_DATABASE: mtw
+      MYSQL_USER: mtw
+      MYSQL_PASSWORD: mtw_secret
+    ports:
+      - '3306:3306'
+    volumes:
+      - mtw_mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=caching_sha2_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-umtw', '-pmtw_secret']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mysql-replica:
+    image: mysql:8.4
+    container_name: mtw-mysql-replica
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret
+      MYSQL_DATABASE: mtw
+      MYSQL_USER: mtw
+      MYSQL_PASSWORD: mtw_secret
+    ports:
+      - '3307:3306'
+    volumes:
+      - mtw_mysql_replica_data:/var/lib/mysql
+    profiles: ['replica']
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-umtw', '-pmtw_secret']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: mtw-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - mtw_redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  nats:
+    image: nats:2.11-alpine
+    container_name: mtw-nats
+    restart: unless-stopped
+    ports:
+      - '4222:4222'
+      - '8222:8222'
+    command: ['-js', '-m', '8222']
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:8222/healthz']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: mtw-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: ${DB_HOST:-mysql}
+      PMA_PORT: ${DB_PORT:-3306}
+      PMA_USER: ${DB_USERNAME:-}
+      PMA_PASSWORD: ${DB_PASSWORD:-}
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 64M
+    ports:
+      - '${PHPMYADMIN_PORT:-8080}:80'
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: mtw-prometheus
+    restart: unless-stopped
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./deploy/docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - mtw_prometheus_data:/prometheus
+    profiles: ['observability']
+
+  grafana:
+    image: grafana/grafana:12.2.0
+    container_name: mtw-grafana
+    restart: unless-stopped
+    ports:
+      - '3005:3000'
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - mtw_grafana_data:/var/lib/grafana
+    profiles: ['observability']
+
+  opensearch:
+    image: opensearchproject/opensearch:2.19.0
+    container_name: mtw-opensearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: 'true'
+      OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - '9200:9200'
+    volumes:
+      - mtw_opensearch_data:/usr/share/opensearch/data
+    profiles: ['observability']
+
+volumes:
+  mtw_mysql_data:
+  mtw_mysql_replica_data:
+  mtw_redis_data:
+  mtw_prometheus_data:
+  mtw_grafana_data:
+  mtw_opensearch_data:
