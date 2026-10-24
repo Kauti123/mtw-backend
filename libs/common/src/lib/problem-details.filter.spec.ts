@@ -1,4 +1,4 @@
-import { problem } from './lib/problem-details.filter';
+import { problem } from './problem-details.filter';
 
 describe('problem helper', () => {
   it('builds RFC 9457-shaped payload', () => {

@@ -1,6 +1,6 @@
 ﻿import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { PasswordService } from '@mtw/security';
+import { AccessTokenService, PasswordService } from '@mtw/security';
 
 interface DemoUser {
   id: string;
@@ -16,7 +16,10 @@ export class AuthService {
   private readonly users = new Map<string, DemoUser>();
   private readonly refreshByHash = new Map<string, { userId: string; expiresAt: number }>();
 
-  constructor(private readonly passwords: PasswordService) {}
+  constructor(
+    private readonly passwords: PasswordService,
+    private readonly accessTokens: AccessTokenService,
+  ) {}
 
   health() {
     return { service: 'auth-service', status: 'ok' };
@@ -63,15 +66,13 @@ export class AuthService {
   }
 
   private issueTokens(user: DemoUser) {
-    const accessToken = Buffer.from(
-      JSON.stringify({
-        sub: user.id,
-        email: user.email,
-        corporateId: user.corporateId ?? null,
-        typ: 'access',
-        exp: Date.now() + 15 * 60_000,
-      }),
-    ).toString('base64url');
+    const issued = this.accessTokens.signAccessToken({
+      subject: user.id,
+      email: user.email,
+      typ: 'access',
+      corporateId: user.corporateId ?? null,
+      displayName: user.displayName,
+    });
 
     const refreshToken = randomBytes(32).toString('hex');
     const hash = createHash('sha256').update(refreshToken).digest('hex');
@@ -81,10 +82,10 @@ export class AuthService {
     });
 
     return {
-      accessToken,
+      accessToken: issued.accessToken,
       refreshToken,
-      tokenType: 'Bearer',
-      expiresIn: 900,
+      tokenType: issued.tokenType,
+      expiresIn: issued.expiresIn,
       user: {
         id: user.id,
         email: user.email,

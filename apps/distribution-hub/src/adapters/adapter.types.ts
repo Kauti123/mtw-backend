@@ -19,13 +19,7 @@ export interface AdapterMeta {
 }
 
 export type Capability =
-  | 'search'
-  | 'book'
-  | 'cancel'
-  | 'modify'
-  | 'priceCheck'
-  | 'getDetails'
-  | 'webhook';
+  'search' | 'book' | 'cancel' | 'modify' | 'priceCheck' | 'getDetails' | 'webhook';
 
 export interface SupplierContext {
   credentials: Record<string, unknown>;
@@ -64,7 +58,7 @@ export interface WebhookResult {
   bookingRef?: string;
 }
 
-export interface SupplierAdapter<V extends Vertical = Vertical> {
+export interface SupplierAdapter<_V extends Vertical = Vertical> {
   readonly meta: AdapterMeta;
   capabilities(): Capability[];
   search(ctx: SupplierContext, req: SearchRequest): Promise<SearchResult>;
@@ -89,9 +83,9 @@ export function RegisterAdapter(meta: AdapterMeta): ClassDecorator {
   return SetMetadata(ADAPTER_META_KEY, meta);
 }
 
-export abstract class BaseSupplierAdapter<V extends Vertical = Vertical>
-  implements SupplierAdapter<V>
-{
+export abstract class BaseSupplierAdapter<
+  V extends Vertical = Vertical,
+> implements SupplierAdapter<V> {
   abstract readonly meta: AdapterMeta;
 
   capabilities(): Capability[] {

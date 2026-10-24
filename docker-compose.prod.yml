@@ -1,0 +1,80 @@
+# Production stack — external MySQL (RDS / remote host).
+# Order: host node_modules → docker build → run
+#   ./deploy/aws/deploy.sh setup      # once: Node + pnpm
+#   ./deploy/aws/deploy.sh install    # pnpm install on host
+#   ./deploy/aws/deploy.sh build      # docker build
+#   ./deploy/aws/deploy.sh up         # start services
+# Or all: ./deploy/aws/deploy.sh
+
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.api-gateway
+    image: mtw-api-gateway:latest
+    container_name: mtw-api-gateway
+    restart: unless-stopped
+    ports:
+      - '${PORT:-4000}:3000'
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DEPLOY_MODE: ${DEPLOY_MODE:-monolith}
+      # Inside Docker, Redis/NATS are sibling services (override hostnames from .env.prod)
+      REDIS_URL: redis://redis:6379
+      NATS_URL: nats://nats:4222
+    depends_on:
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: mtw-redis
+    restart: unless-stopped
+    volumes:
+      - mtw_redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    # Do not publish Redis to the public internet in production
+    expose:
+      - '6379'
+
+  nats:
+    image: nats:2.11-alpine
+    container_name: mtw-nats
+    restart: unless-stopped
+    command: ['-js', '-m', '8222']
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:8222/healthz']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    expose:
+      - '4222'
+      - '8222'
+
+  # Optional admin UI against external DB — enable with: --profile admin
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: mtw-phpmyadmin
+    restart: unless-stopped
+    profiles: ['admin']
+    environment:
+      PMA_HOST: ${DB_HOST}
+      PMA_PORT: ${DB_PORT:-3306}
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 64M
+    ports:
+      - '${PHPMYADMIN_PORT:-8080}:80'
+
+volumes:
+  mtw_redis_data:

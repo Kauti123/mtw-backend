@@ -44,7 +44,7 @@ writeFileSync(
 
 writeFileSync(
   join(base, 'src', 'modules', name, `${name}.controller.ts`),
-  `import { Controller, Get } from '@nestjs/common';\nimport { ${classBase}Service } from './${name}.service';\n\n@Controller('${name}')\nexport class ${classBase}Controller {\n  constructor(private readonly service: ${classBase}Service) {}\n\n  @Get('health')\n  health() {\n    return this.service.health();\n  }\n}\n`,
+  `import { Controller, Get } from '@nestjs/common';\nimport { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';\nimport { ${classBase}Service } from './${name}.service';\n\n@ApiTags('${name}')\n@Controller('${name}')\nexport class ${classBase}Controller {\n  constructor(private readonly service: ${classBase}Service) {}\n\n  @Get('health')\n  @ApiOperation({ summary: '${classBase} service health probe' })\n  @ApiOkResponse({ description: 'Service is healthy' })\n  health() {\n    return this.service.health();\n  }\n}\n`,
 );
 
 writeFileSync(join(base, 'src', 'modules', name, 'dto', 'index.ts'), 'export {};\n');
@@ -58,7 +58,7 @@ writeFileSync(
 
 writeFileSync(
   join(base, 'src', 'main.ts'),
-  `import { Logger } from '@nestjs/common';\nimport { NestFactory } from '@nestjs/core';\nimport { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';\nimport { AppModule } from './app.module';\n\nasync function bootstrap(): Promise<void> {\n  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ logger: false }));\n  app.setGlobalPrefix('v1');\n  const port = Number(process.env['PORT'] ?? 3100);\n  await app.listen(port, '0.0.0.0');\n  Logger.log(\`${serviceName} listening on :\${port}\`);\n}\nvoid bootstrap();\n`,
+  `import { Logger } from '@nestjs/common';\nimport { NestFactory } from '@nestjs/core';\nimport { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';\nimport { setupSwagger } from '@mtw/common';\nimport { AppModule } from './app.module';\n\nasync function bootstrap(): Promise<void> {\n  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ logger: false }));\n  app.setGlobalPrefix('v1');\n  setupSwagger(app, {\n    title: 'MTW ${classBase} Service',\n    description: '${classBase} APIs.',\n    tags: [{ name: '${name}', description: '${classBase} service' }],\n  });\n  const port = Number(process.env['PORT'] ?? 3100);\n  await app.listen(port, '0.0.0.0');\n  Logger.log(\`${serviceName} listening on :\${port} — Swagger at /docs\`);\n}\nvoid bootstrap();\n`,
 );
 
 console.log(`Created ${serviceName} at ${base}`);

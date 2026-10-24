@@ -7,7 +7,9 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { apiResponse, type ApiResponse } from './api-response';
 
+/** @deprecated Prefer ApiResponse; kept for callers that still build problem objects. */
 export interface ProblemDetails {
   type: string;
   title: string;
@@ -29,47 +31,50 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     const request = ctx.getRequest<FastifyRequest>();
 
     const correlationId =
-      (request.headers['x-correlation-id'] as string | undefined) ??
-      request.id?.toString();
+      (request.headers['x-correlation-id'] as string | undefined) ?? request.id?.toString();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let title = 'Internal Server Error';
-    let detail: string | undefined;
-    let errors: unknown;
-    let type = 'about:blank';
+    let message = 'Internal Server Error';
+    let data: unknown = null;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const body = exception.getResponse();
       if (typeof body === 'string') {
-        detail = body;
-        title = HttpStatus[status] ?? title;
+        message = body;
       } else if (typeof body === 'object' && body !== null) {
         const obj = body as Record<string, unknown>;
-        title = typeof obj['error'] === 'string' ? obj['error'] : (HttpStatus[status] ?? title);
-        detail = typeof obj['message'] === 'string' ? obj['message'] : exception.message;
-        errors = obj['errors'] ?? obj['message'];
-        if (typeof obj['type'] === 'string') type = obj['type'];
+        if (typeof obj['message'] === 'string') {
+          message = obj['message'];
+        } else if (Array.isArray(obj['message'])) {
+          message = obj['message'].join(', ');
+          data = obj['message'];
+        } else {
+          message = exception.message || (HttpStatus[status] ?? message);
+        }
+        if (obj['errors'] !== undefined) {
+          data = obj['errors'];
+        } else if (
+          data === null &&
+          obj['message'] !== undefined &&
+          typeof obj['message'] !== 'string'
+        ) {
+          data = obj['message'];
+        }
+      } else {
+        message = exception.message || message;
       }
     } else if (exception instanceof Error) {
-      detail = exception.message;
+      message = exception.message || message;
       this.logger.error(exception.message, exception.stack);
     }
 
-    const problem: ProblemDetails = {
-      type,
-      title,
-      status,
-      detail,
-      instance: request.url,
-      correlationId,
-      ...(errors !== undefined ? { errors } : {}),
+    const payload: ApiResponse & { correlationId?: string } = {
+      ...apiResponse(status, message, data ?? []),
+      ...(correlationId ? { correlationId } : {}),
     };
 
-    void response
-      .status(status)
-      .header('content-type', 'application/problem+json')
-      .send(problem);
+    void response.status(status).header('content-type', 'application/json').send(payload);
   }
 }
 
@@ -79,5 +84,11 @@ export function problem(
   detail?: string,
   extra?: Record<string, unknown>,
 ): ProblemDetails {
-  return { type: 'about:blank', title, status, detail, ...extra };
+  return {
+    type: 'about:blank',
+    title,
+    status,
+    detail,
+    ...extra,
+  };
 }

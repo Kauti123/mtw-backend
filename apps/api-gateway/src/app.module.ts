@@ -1,7 +1,11 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@mtw/config';
-import { ProblemDetailsFilter, CorrelationIdInterceptor } from '@mtw/common';
+import {
+  ProblemDetailsFilter,
+  CorrelationIdInterceptor,
+  TransformResponseInterceptor,
+} from '@mtw/common';
 import { ObservabilityModule } from '@mtw/observability';
 import { DatabaseModule } from '@mtw/database';
 import { CacheModule } from '@mtw/cache';
@@ -9,14 +13,14 @@ import { SecurityModule } from '@mtw/security';
 import { MessagingModule } from '@mtw/messaging';
 import { HttpClientModule } from '@mtw/http-client';
 import { QueueModule } from '@mtw/queue';
-import { AuthModule } from '../../auth-service/src';
-import { UsersModule } from '../../user-service/src';
-import { CorporateModule } from '../../corporate-service/src';
+import { AdminUsersModule, AuthModule } from '../../auth-service/src';
+import { PermissionsModule, RolesModule, UsersModule } from '../../user-service/src';
+import { CorporateCodesModule, CorporateModule } from '../../corporate-service/src';
 import { BookingModule } from '../../booking-service/src';
 import { PolicyModule } from '../../policy-service/src';
 import { SupplierModule } from '../../supplier-service/src';
 import { DistributionHubModule } from '../../distribution-hub/src';
-import { PricingModule } from '../../pricing-service/src';
+import { CommercialModule, MarkupRulesModule, PricingModule } from '../../pricing-service/src';
 import { PaymentModule } from '../../payment-service/src';
 import { NotificationModule } from '../../notification-service/src';
 import { ReportingModule } from '../../reporting-service/src';
@@ -46,13 +50,19 @@ import { PartnerBffModule } from './modules/bff/partner/partner-bff.module';
     HealthModule,
     MetricsModule,
     AuthModule,
+    AdminUsersModule,
     UsersModule,
+    RolesModule,
+    PermissionsModule,
     CorporateModule,
+    CorporateCodesModule,
     BookingModule,
     PolicyModule,
     SupplierModule,
     DistributionHubModule,
     PricingModule,
+    MarkupRulesModule,
+    CommercialModule,
     PaymentModule,
     NotificationModule,
     ReportingModule,
@@ -70,6 +80,8 @@ import { PartnerBffModule } from './modules/bff/partner/partner-bff.module';
   providers: [
     { provide: APP_FILTER, useClass: ProblemDetailsFilter },
     { provide: APP_INTERCEPTOR, useClass: CorrelationIdInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: TransformResponseInterceptor },
+    // Global JwtAuthGuard is registered once via SecurityModule (APP_GUARD).
   ],
 })
 export class AppModule {}

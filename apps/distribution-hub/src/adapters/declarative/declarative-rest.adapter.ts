@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import type {
   BookingConfirmation,
   BookingRequest,
@@ -7,11 +6,7 @@ import type {
 } from '@mtw/contracts';
 import jsonata from 'jsonata';
 import { z } from 'zod';
-import {
-  BaseSupplierAdapter,
-  type HealthStatus,
-  type SupplierContext,
-} from '../adapter.types';
+import { BaseSupplierAdapter, type HealthStatus, type SupplierContext } from '../adapter.types';
 
 export const DeclarativeAdapterDefinitionSchema = z.object({
   code: z.string(),
@@ -35,9 +30,7 @@ export const DeclarativeAdapterDefinitionSchema = z.object({
   errorMap: z.record(z.string()).default({}),
 });
 
-export type DeclarativeAdapterDefinition = z.infer<
-  typeof DeclarativeAdapterDefinitionSchema
->;
+export type DeclarativeAdapterDefinition = z.infer<typeof DeclarativeAdapterDefinitionSchema>;
 
 /**
  * Config-driven REST adapter. Definition is loaded from DB (Phase 6 admin API).

@@ -3,6 +3,23 @@ import { z } from 'zod';
 
 const durationRegex = /^\d+(ms|s|m|h|d)$/;
 
+function buildDatabaseUrl(env: NodeJS.ProcessEnv): string | undefined {
+  if (env['DATABASE_URL']) {
+    return env['DATABASE_URL'];
+  }
+
+  const host = env['DB_HOST'];
+  const port = env['DB_PORT'] ?? '3306';
+  const user = env['DB_USERNAME'] ?? env['DB_USER'];
+  const password = env['DB_PASSWORD'];
+  const name = env['DB_NAME'] ?? env['DB_DATABASE'];
+  if (host && user && password && name) {
+    return `mysql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${name}`;
+  }
+
+  return undefined;
+}
+
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   DEPLOY_MODE: z.enum(['monolith', 'microservices']).default('monolith'),
@@ -15,6 +32,11 @@ export const envSchema = z.object({
   EMPLOYEE_DOMAIN: z.string().default('employee.mtw.local'),
   SUPPLIER_DOMAIN: z.string().default('supplier.mtw.local'),
   API_DOMAIN: z.string().default('api.mtw.local'),
+  DB_HOST: z.string().optional(),
+  DB_PORT: z.coerce.number().int().positive().optional(),
+  DB_USERNAME: z.string().optional(),
+  DB_PASSWORD: z.string().optional(),
+  DB_NAME: z.string().optional(),
   DATABASE_URL: z.string().min(1).default('mysql://mtw:mtw_secret@localhost:3306/mtw'),
   DATABASE_REPLICA_URL: z.string().optional(),
   REDIS_URL: z.string().default('redis://localhost:6379'),
@@ -25,6 +47,8 @@ export const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(32).default('dev-refresh-secret-min-32-characters!'),
   JWT_ACCESS_TTL: z.string().regex(durationRegex).default('15m'),
   JWT_REFRESH_TTL: z.string().regex(durationRegex).default('7d'),
+  JWT_ISSUER: z.string().min(1).default('mtw-backend'),
+  JWT_AUDIENCE: z.string().min(1).default('mtw-api'),
   CREDENTIAL_ENCRYPTION_KEY: z
     .string()
     .length(64)
@@ -52,11 +76,12 @@ export type AppConfig = z.infer<typeof envSchema>;
 export const APP_CONFIG = Symbol('APP_CONFIG');
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
-  const parsed = envSchema.safeParse(env);
+  const parsed = envSchema.safeParse({
+    ...env,
+    DATABASE_URL: buildDatabaseUrl(env) ?? env['DATABASE_URL'],
+  });
   if (!parsed.success) {
-    const details = parsed.error.issues
-      .map((i) => `${i.path.join('.')}: ${i.message}`)
-      .join('; ');
+    const details = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
     throw new Error(`Invalid environment configuration: ${details}`);
   }
   return parsed.data;

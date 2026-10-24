@@ -1,2 +1,1 @@
-/** Domain entities for policy-service (Prisma-mapped types). */
-export {};
+export type { TravelPolicyRecord } from '@mtw/contracts';

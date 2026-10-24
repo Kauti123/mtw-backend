@@ -68,6 +68,20 @@ services:
       timeout: 3s
       retries: 10
 
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: mtw-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: ${DB_HOST:-mysql}
+      PMA_PORT: ${DB_PORT:-3306}
+      PMA_USER: ${DB_USERNAME:-}
+      PMA_PASSWORD: ${DB_PASSWORD:-}
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 64M
+    ports:
+      - '${PHPMYADMIN_PORT:-8080}:80'
+
   prometheus:
     image: prom/prometheus:v3.5.0
     container_name: mtw-prometheus

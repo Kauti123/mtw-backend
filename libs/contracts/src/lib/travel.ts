@@ -101,15 +101,7 @@ export const BookingConfirmationSchema = z.object({
   bookingRef: z.string(),
   supplierBookingRef: z.string(),
   supplierCode: z.string(),
-  status: z.enum([
-    'INITIATED',
-    'HELD',
-    'CONFIRMED',
-    'TICKETED',
-    'CANCELLED',
-    'MODIFIED',
-    'FAILED',
-  ]),
+  status: z.enum(['INITIATED', 'HELD', 'CONFIRMED', 'TICKETED', 'CANCELLED', 'MODIFIED', 'FAILED']),
   price: PriceBreakdownSchema,
   raw: z.unknown().optional(),
 });
@@ -140,6 +132,13 @@ export const DomainEventSchema = z.object({
   correlationId: z.string().optional(),
 });
 export type DomainEvent = z.infer<typeof DomainEventSchema>;
+
+export const HubCancelRequestSchema = z.object({
+  supplierCode: z.string().min(1),
+  vertical: VerticalSchema,
+  bookingRef: z.string().min(1),
+});
+export type HubCancelRequest = z.infer<typeof HubCancelRequestSchema>;
 
 export const DomainEvents = {
   BookingCreated: 'booking.created',

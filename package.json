@@ -29,6 +29,11 @@
     "prepare": "husky || true",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
+    "docker:prod:install": "pnpm install --frozen-lockfile && pnpm prisma:generate",
+    "docker:prod:build": "docker compose -f docker-compose.prod.yml --env-file .env.prod build",
+    "docker:prod:up": "docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --no-build",
+    "docker:prod:down": "docker compose -f docker-compose.prod.yml --env-file .env.prod down",
+    "docker:prod:deploy": "pnpm docker:prod:install && pnpm docker:prod:build && pnpm docker:prod:up",
     "ci": "pnpm lint && pnpm test && pnpm build"
   },
   "dependencies": {
