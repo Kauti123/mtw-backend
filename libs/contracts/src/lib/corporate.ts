@@ -40,13 +40,19 @@ export const BookingSettingsSchema = z.object({
   cancellationAllowed: z.boolean().default(true),
 });
 
-export const CreditAndBillingSchema = z.object({
-  billingMode: z.string().default('Credit Limit'),
-  creditLimit: z.number().nonnegative().default(1000000),
-  paymentTerms: z.string().default('Net 30'),
-  gstNumber: z.string().optional().default('27ABCDE1234F1Z5'),
-  taxTreatment: z.string().default('Exclusive of Tax'),
-});
+export const CreditAndBillingSchema = z
+  .object({
+    billingMode: z.string().default('Credit Limit'),
+    billingModes: z.array(z.string()).optional().default([]),
+    creditWallet: z.boolean().optional(),
+    depositWallet: z.boolean().optional(),
+    paymentGateway: z.boolean().optional(),
+    creditLimit: z.number().nonnegative().default(1000000),
+    paymentTerms: z.string().default('Net 30'),
+    gstNumber: z.string().optional().default('27ABCDE1234F1Z5'),
+    taxTreatment: z.string().default('Exclusive of Tax'),
+  })
+  .passthrough();
 
 export const SecuritySettingsSchema = z.object({
   sessionTimeout: z.union([z.string(), z.number()]).default('60 minutes'),

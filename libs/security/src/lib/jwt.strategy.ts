@@ -21,7 +21,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!payload?.sub || !payload.email || !payload.typ) {
       throw new UnauthorizedException('Invalid access token payload');
     }
-    if (payload.typ !== 'access' && payload.typ !== 'admin_access') {
+    if (
+      payload.typ !== 'access' &&
+      payload.typ !== 'admin_access' &&
+      payload.typ !== 'corporate_access' &&
+      payload.typ !== 'supplier_access'
+    ) {
       throw new UnauthorizedException('Invalid access token type');
     }
 

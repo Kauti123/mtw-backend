@@ -1,4 +1,4 @@
-export type AccessTokenType = 'access' | 'admin_access';
+export type AccessTokenType = 'access' | 'admin_access' | 'corporate_access' | 'supplier_access';
 
 export interface AccessTokenClaims {
   sub: string;

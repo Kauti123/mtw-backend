@@ -9,6 +9,7 @@ export const PolicyApplicableToSchema = z.enum([
   'SPECIFIC_DEPARTMENTS',
   'SPECIFIC_COST_CENTERS',
   'SPECIFIC_EMPLOYEES_GROUPS',
+  'SPECIFIC_POSITIONS',
 ]);
 export const PolicyWizardStepSchema = z.union([
   z.literal(1),
@@ -23,10 +24,12 @@ const APPLICABLE_TO_ALIASES: Record<string, z.infer<typeof PolicyApplicableToSch
   SPECIFIC_DEPARTMENTS: 'SPECIFIC_DEPARTMENTS',
   SPECIFIC_COST_CENTERS: 'SPECIFIC_COST_CENTERS',
   SPECIFIC_EMPLOYEES_GROUPS: 'SPECIFIC_EMPLOYEES_GROUPS',
+  SPECIFIC_POSITIONS: 'SPECIFIC_POSITIONS',
   'All Employees': 'ALL_EMPLOYEES',
   'Specific Departments': 'SPECIFIC_DEPARTMENTS',
   'Specific Cost Centers': 'SPECIFIC_COST_CENTERS',
   'Specific Employees/Groups': 'SPECIFIC_EMPLOYEES_GROUPS',
+  'Specific position wise': 'SPECIFIC_POSITIONS',
 };
 
 const STATUS_ALIASES: Record<string, z.infer<typeof PolicyStatusSchema>> = {
@@ -90,61 +93,95 @@ export const FlightClassRestrictionSchema = z.enum([
 
 export const RouteRestrictionSchema = z.enum(['NONE', 'ALLOW_SPECIFIC', 'RESTRICT_SPECIFIC']);
 
-export const FlightRulesSchema = z.object({
-  classRestriction: FlightClassRestrictionSchema.default('ECONOMY_ONLY'),
-  preferredAirlines: z.array(z.string()).default([]),
-  restrictedAirlines: z.array(z.string()).default([]),
-  minAdvanceBookingDays: z.number().int().min(0).default(7),
-  maxAdvanceBookingDays: z.number().int().min(0).default(90),
-  routeRestriction: RouteRestrictionSchema.default('NONE'),
-  allowedLocations: z.array(z.string()).default([]),
-  restrictedLocations: z.array(z.string()).default([]),
-  allowRefundableTickets: z.boolean().default(true),
-  allowDateChange: z.boolean().default(true),
-  allowOpenJaw: z.boolean().default(false),
-  allowMultiCity: z.boolean().default(true),
-  allowOnlyCorporateFares: z.boolean().default(true),
-  allowPublicFares: z.boolean().default(false),
-  autoApplyBestFare: z.boolean().default(true),
-  requireApprovalForFareDifference: z.boolean().default(false),
-  fareDifferenceThreshold: z.number().min(0).default(200),
+export const ModuleProcessSchema = z.object({
+  withinPolicyApprover: z.boolean().default(false),
+  beyondPolicyApprover: z.boolean().default(true),
+  domestic: z.boolean().default(true),
+  international: z.boolean().default(true),
 });
 
-export const HotelRulesSchema = z.object({
-  maxStarRating: z.number().int().min(1).max(5).default(4),
-  preferredHotels: z.array(z.string()).default([]),
-  restrictedHotels: z.array(z.string()).default([]),
-  allowRefundableOnly: z.boolean().default(false),
-  requireApprovalAboveLimit: z.boolean().default(true),
-});
+export const FlightRulesSchema = z
+  .object({
+    classRestriction: FlightClassRestrictionSchema.default('ECONOMY_ONLY'),
+    preferredAirlines: z.array(z.string()).default([]),
+    restrictedAirlines: z.array(z.string()).default([]),
+    minAdvanceBookingDays: z.number().int().min(0).default(7),
+    maxAdvanceBookingDays: z.number().int().min(0).default(90),
+    routeRestriction: RouteRestrictionSchema.default('NONE'),
+    allowedLocations: z.array(z.string()).default([]),
+    restrictedLocations: z.array(z.string()).default([]),
+    allowRefundableTickets: z.boolean().default(true),
+    allowDateChange: z.boolean().default(true),
+    allowOpenJaw: z.boolean().default(false),
+    allowMultiCity: z.boolean().default(true),
+    allowOnlyCorporateFares: z.boolean().default(true),
+    allowPublicFares: z.boolean().default(false),
+    autoApplyBestFare: z.boolean().default(true),
+    requireApprovalForFareDifference: z.boolean().default(false),
+    fareDifferenceThreshold: z.number().min(0).default(200),
+    process: ModuleProcessSchema.default({}),
+  })
+  .passthrough();
 
-export const GroundTransportRulesSchema = z.object({
-  vehicleClass: z.enum(['ECONOMY', 'STANDARD', 'PREMIUM', 'ALL']).default('ECONOMY'),
-  allowRideShare: z.boolean().default(true),
-  allowRentalCar: z.boolean().default(true),
-  maxDailyDistanceKm: z.number().min(0).optional(),
-});
+export const HotelRulesSchema = z
+  .object({
+    maxStarRating: z.number().int().min(1).max(5).default(4),
+    preferredHotels: z.array(z.string()).default([]),
+    restrictedHotels: z.array(z.string()).default([]),
+    allowRefundableOnly: z.boolean().default(false),
+    requireApprovalAboveLimit: z.boolean().default(true),
+    process: ModuleProcessSchema.default({}),
+  })
+  .passthrough();
 
-export const TrainRulesSchema = z.object({
-  allowed: z.boolean().default(true),
-  maxClass: z.enum(['SLEEPER', 'AC_CHAIR', 'AC_3_TIER', 'AC_2_TIER', 'FIRST']).default('AC_3_TIER'),
-  preferredOperators: z.array(z.string()).default([]),
-});
+export const GroundTransportRulesSchema = z
+  .object({
+    vehicleClass: z.enum(['ECONOMY', 'STANDARD', 'PREMIUM', 'ALL']).default('ECONOMY'),
+    allowRideShare: z.boolean().default(true),
+    allowRentalCar: z.boolean().default(true),
+    maxDailyDistanceKm: z.number().min(0).optional(),
+    process: ModuleProcessSchema.default({}),
+  })
+  .passthrough();
 
-export const OtherServicesRulesSchema = z.object({
-  allowVisaServices: z.boolean().default(true),
-  allowTravelInsurance: z.boolean().default(true),
-  allowAirportTransfers: z.boolean().default(true),
-  notes: z.string().max(500).optional().default(''),
-});
+export const TrainRulesSchema = z
+  .object({
+    allowed: z.boolean().default(true),
+    maxClass: z
+      .enum(['SLEEPER', 'AC_CHAIR', 'AC_3_TIER', 'AC_2_TIER', 'FIRST'])
+      .default('AC_3_TIER'),
+    preferredOperators: z.array(z.string()).default([]),
+    process: ModuleProcessSchema.default({}),
+  })
+  .passthrough();
 
-export const TravelRulesSchema = z.object({
-  flights: FlightRulesSchema.default({}),
-  hotels: HotelRulesSchema.default({}),
-  groundTransport: GroundTransportRulesSchema.default({}),
-  trains: TrainRulesSchema.default({}),
-  otherServices: OtherServicesRulesSchema.default({}),
-});
+export const OtherServicesRulesSchema = z
+  .object({
+    allowVisaServices: z.boolean().default(true),
+    allowTravelInsurance: z.boolean().default(true),
+    allowAirportTransfers: z.boolean().default(true),
+    notes: z.string().max(500).optional().default(''),
+    process: ModuleProcessSchema.default({}),
+  })
+  .passthrough();
+
+export const BusRulesSchema = z
+  .object({
+    allowed: z.boolean().default(true),
+    process: ModuleProcessSchema.default({}),
+  })
+  .passthrough();
+
+export const TravelRulesSchema = z
+  .object({
+    flights: FlightRulesSchema.default({}),
+    hotels: HotelRulesSchema.default({}),
+    groundTransport: GroundTransportRulesSchema.default({}),
+    trains: TrainRulesSchema.default({}),
+    bus: BusRulesSchema.default({}),
+    otherServices: OtherServicesRulesSchema.default({}),
+  })
+  .passthrough();
 
 export const PolicySpendingLimitsSchema = z.object({
   currency: z.string().length(3).default('USD'),

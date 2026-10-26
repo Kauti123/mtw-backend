@@ -15,7 +15,7 @@ import { HttpClientModule } from '@mtw/http-client';
 import { QueueModule } from '@mtw/queue';
 import { AdminUsersModule, AuthModule } from '../../auth-service/src';
 import { PermissionsModule, RolesModule, UsersModule } from '../../user-service/src';
-import { CorporateCodesModule, CorporateModule } from '../../corporate-service/src';
+import { CorporateCodesModule, CorporateModule, WalletsModule } from '../../corporate-service/src';
 import { BookingModule } from '../../booking-service/src';
 import { PolicyModule } from '../../policy-service/src';
 import { SupplierModule } from '../../supplier-service/src';
@@ -56,6 +56,7 @@ import { PartnerBffModule } from './modules/bff/partner/partner-bff.module';
     PermissionsModule,
     CorporateModule,
     CorporateCodesModule,
+    WalletsModule,
     BookingModule,
     PolicyModule,
     SupplierModule,

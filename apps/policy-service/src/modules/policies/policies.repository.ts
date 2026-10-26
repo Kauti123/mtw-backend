@@ -16,6 +16,42 @@ import type {
   UpdateTravelPolicyDto,
 } from './dto';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function mergeModule<T extends Record<string, unknown>>(defaults: T, raw: unknown): T {
+  const extra = asRecord(raw);
+  return {
+    ...defaults,
+    ...extra,
+    process: { ...asRecord(defaults.process), ...asRecord(extra.process) },
+  } as T;
+}
+
+function mergeTravelRules(raw: unknown): TravelPolicyRecord['travelRules'] {
+  const defaults = defaultTravelRules();
+  const extra = asRecord(raw);
+  return {
+    ...defaults,
+    ...extra,
+    flights: mergeModule(asRecord(defaults.flights), extra.flights) as typeof defaults.flights,
+    hotels: mergeModule(asRecord(defaults.hotels), extra.hotels) as typeof defaults.hotels,
+    groundTransport: mergeModule(
+      asRecord(defaults.groundTransport),
+      extra.groundTransport,
+    ) as typeof defaults.groundTransport,
+    trains: mergeModule(asRecord(defaults.trains), extra.trains) as typeof defaults.trains,
+    bus: mergeModule(asRecord(defaults.bus), extra.bus) as typeof defaults.bus,
+    otherServices: mergeModule(
+      asRecord(defaults.otherServices),
+      extra.otherServices,
+    ) as typeof defaults.otherServices,
+  };
+}
+
 @Injectable()
 export class PoliciesRepository {
   private readonly memoryStore = new Map<string, TravelPolicyRecord>();
@@ -137,8 +173,15 @@ export class PoliciesRepository {
         ]);
 
         if (rows.length > 0 || total === 0) {
+          const items = rows.flatMap((row) => {
+            try {
+              return [this.mapFromPrisma(row)];
+            } catch {
+              return [];
+            }
+          });
           return {
-            items: rows.map((row) => this.mapFromPrisma(row)),
+            items,
             total,
             page,
             limit,
@@ -253,6 +296,10 @@ export class PoliciesRepository {
               ...existing.travelRules.trains,
               ...(input.travelRules.trains ?? {}),
             },
+            bus: {
+              ...existing.travelRules.bus,
+              ...(input.travelRules.bus ?? {}),
+            },
             otherServices: {
               ...existing.travelRules.otherServices,
               ...(input.travelRules.otherServices ?? {}),
@@ -293,6 +340,10 @@ export class PoliciesRepository {
         trains: {
           ...defaultTravelRules().trains,
           ...(input.travelRules.trains ?? {}),
+        },
+        bus: {
+          ...defaultTravelRules().bus,
+          ...(input.travelRules.bus ?? {}),
         },
         otherServices: {
           ...defaultTravelRules().otherServices,
@@ -402,12 +453,7 @@ export class PoliciesRepository {
       status: row.status as TravelPolicyRecord['status'],
       currentStep: row.currentStep,
       completedSteps: Array.isArray(row.completedSteps) ? (row.completedSteps as number[]) : [],
-      travelRules: row.travelRules
-        ? {
-            ...defaultTravelRules(),
-            ...(row.travelRules as object),
-          }
-        : defaultTravelRules(),
+      travelRules: mergeTravelRules(row.travelRules),
       spendingLimits: row.spendingLimits
         ? {
             ...defaultSpendingLimits(),

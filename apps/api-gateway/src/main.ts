@@ -31,6 +31,7 @@ async function bootstrap(): Promise<void> {
       { name: 'permissions', description: 'Permission catalog and matrix CRUD' },
       { name: 'corporates', description: 'Corporate account CRUD' },
       { name: 'corporate-codes', description: 'Corporate code master CRUD' },
+      { name: 'corporate-wallets', description: 'Corporate deposit and credit wallet consume' },
       { name: 'masterdata', description: 'Master data including corporate account APIs' },
       { name: 'bookings', description: 'Travel search, booking, and cancellation' },
       { name: 'distribution-hub', description: 'Supplier adapter orchestration' },
